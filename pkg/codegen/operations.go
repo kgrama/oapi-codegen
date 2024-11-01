@@ -25,6 +25,7 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi3"
 
+	"github.com/oapi-codegen/oapi-codegen/v2/pkg/codegen/internal"
 	"github.com/oapi-codegen/oapi-codegen/v2/pkg/codegen/openapiv3"
 	"github.com/oapi-codegen/oapi-codegen/v2/pkg/util"
 )
@@ -128,7 +129,7 @@ func (pd ParameterDefinition) GoVariableName() string {
 
 func (pd ParameterDefinition) GoName() string {
 	goName := pd.ParamName
-	if extension, ok := pd.Spec.Extensions[extGoName]; ok {
+	if extension, ok := pd.Spec.Extensions[internal.ExtGoName]; ok {
 		if extGoFieldName, err := extParseGoFieldName(extension); err == nil {
 			goName = extGoFieldName
 		}

@@ -26,6 +26,7 @@ import (
 	"unicode"
 
 	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/oapi-codegen/oapi-codegen/v2/pkg/codegen/internal"
 )
 
 var (
@@ -381,7 +382,7 @@ func schemaXOrder(v *openapi3.SchemaRef) (int64, bool) {
 	}
 
 	// YAML parsing picks up the x-order as a float64
-	if order, ok := v.Extensions[extOrder].(float64); ok {
+	if order, ok := v.Extensions[internal.ExtOrder].(float64); ok {
 		return int64(order), true
 	}
 
@@ -392,7 +393,7 @@ func schemaXOrder(v *openapi3.SchemaRef) (int64, bool) {
 	// if v.Value is set, then this is actually a `$ref`, and we should check if there's an x-order set on that
 
 	// YAML parsing picks up the x-order as a float64
-	if order, ok := v.Value.Extensions[extOrder].(float64); ok {
+	if order, ok := v.Value.Extensions[internal.ExtOrder].(float64); ok {
 		return int64(order), true
 	}
 
@@ -924,10 +925,10 @@ func renameSchema(schemaName string, schemaRef *openapi3.SchemaRef) (string, err
 	}
 	schema := schemaRef.Value
 
-	if extension, ok := schema.Extensions[extGoName]; ok {
+	if extension, ok := schema.Extensions[internal.ExtGoName]; ok {
 		typeName, err := extTypeName(extension)
 		if err != nil {
-			return "", fmt.Errorf("invalid value for %q: %w", extPropGoType, err)
+			return "", fmt.Errorf("invalid value for %q: %w", internal.ExtPropGoType, err)
 		}
 		return typeName, nil
 	}
@@ -942,10 +943,10 @@ func renameParameter(parameterName string, parameterRef *openapi3.ParameterRef) 
 	}
 	parameter := parameterRef.Value
 
-	if extension, ok := parameter.Extensions[extGoName]; ok {
+	if extension, ok := parameter.Extensions[internal.ExtGoName]; ok {
 		typeName, err := extTypeName(extension)
 		if err != nil {
-			return "", fmt.Errorf("invalid value for %q: %w", extPropGoType, err)
+			return "", fmt.Errorf("invalid value for %q: %w", internal.ExtPropGoType, err)
 		}
 		return typeName, nil
 	}
@@ -960,10 +961,10 @@ func renameResponse(responseName string, responseRef *openapi3.ResponseRef) (str
 	}
 	response := responseRef.Value
 
-	if extension, ok := response.Extensions[extGoName]; ok {
+	if extension, ok := response.Extensions[internal.ExtGoName]; ok {
 		typeName, err := extTypeName(extension)
 		if err != nil {
-			return "", fmt.Errorf("invalid value for %q: %w", extPropGoType, err)
+			return "", fmt.Errorf("invalid value for %q: %w", internal.ExtPropGoType, err)
 		}
 		return typeName, nil
 	}
@@ -978,10 +979,10 @@ func renameRequestBody(requestBodyName string, requestBodyRef *openapi3.RequestB
 	}
 	requestBody := requestBodyRef.Value
 
-	if extension, ok := requestBody.Extensions[extGoName]; ok {
+	if extension, ok := requestBody.Extensions[internal.ExtGoName]; ok {
 		typeName, err := extTypeName(extension)
 		if err != nil {
-			return "", fmt.Errorf("invalid value for %q: %w", extPropGoType, err)
+			return "", fmt.Errorf("invalid value for %q: %w", internal.ExtPropGoType, err)
 		}
 		return typeName, nil
 	}
@@ -1032,11 +1033,11 @@ func findSchemaNameByRefPath(refPath string, spec *openapi3.T) (string, error) {
 }
 
 func ParseGoImportExtension(v *openapi3.SchemaRef) (*goImport, error) {
-	if v.Value.Extensions[extPropGoImport] == nil || v.Value.Extensions[extPropGoType] == nil {
+	if v.Value.Extensions[internal.ExtPropGoImport] == nil || v.Value.Extensions[internal.ExtPropGoType] == nil {
 		return nil, nil
 	}
 
-	goTypeImportExt := v.Value.Extensions[extPropGoImport]
+	goTypeImportExt := v.Value.Extensions[internal.ExtPropGoImport]
 
 	importI, ok := goTypeImportExt.(map[string]interface{})
 	if !ok {

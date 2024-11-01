@@ -4,30 +4,6 @@ import (
 	"fmt"
 )
 
-const (
-	// extPropGoType overrides the generated type definition.
-	extPropGoType = "x-go-type"
-	// extPropGoTypeSkipOptionalPointer specifies that optional fields should
-	// be the type itself instead of a pointer to the type.
-	extPropGoTypeSkipOptionalPointer = "x-go-type-skip-optional-pointer"
-	// extPropGoImport specifies the module to import which provides above type
-	extPropGoImport = "x-go-type-import"
-	// extGoName is used to override a field name
-	extGoName = "x-go-name"
-	// extGoTypeName is used to override a generated typename for something.
-	extGoTypeName        = "x-go-type-name"
-	extPropGoJsonIgnore  = "x-go-json-ignore"
-	extPropOmitEmpty     = "x-omitempty"
-	extPropExtraTags     = "x-oapi-codegen-extra-tags"
-	extEnumVarNames      = "x-enum-varnames"
-	extEnumNames         = "x-enumNames"
-	extDeprecationReason = "x-deprecated-reason"
-	extOrder             = "x-order"
-	// extOapiCodegenOnlyHonourGoName is to be used to explicitly enforce the generation of a field as the `x-go-name` extension has describe it.
-	// This is intended to be used alongside the `allow-unexported-struct-field-names` Compatibility option
-	extOapiCodegenOnlyHonourGoName = "x-oapi-codegen-only-honour-go-name"
-)
-
 func extString(extPropValue interface{}) (string, error) {
 	str, ok := extPropValue.(string)
 	if !ok {
