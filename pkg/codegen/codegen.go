@@ -42,9 +42,9 @@ import (
 //go:embed templates
 var templates embed.FS
 
-// globalState stores all global state. Please don't put global state anywhere
+// GlobalState stores all global state. Please don't put global state anywhere
 // else so that we can easily track it.
-var globalState struct {
+var GlobalState struct {
 	options       openapiv3.Configuration
 	spec          *openapi3.T
 	importMapping importMap
@@ -114,9 +114,9 @@ func constructImportMapping(importMapping map[string]string) importMap {
 // opts defines
 func Generate(spec *openapi3.T, opts openapiv3.Configuration) (string, error) {
 	// This is global state
-	globalState.options = opts
-	globalState.spec = spec
-	globalState.importMapping = constructImportMapping(opts.ImportMapping)
+	GlobalState.options = opts
+	GlobalState.spec = spec
+	GlobalState.importMapping = constructImportMapping(opts.ImportMapping)
 
 	openapiv3.FilterOperationsByTag(spec, opts)
 	openapiv3.FilterOperationsByOperationID(spec, opts)
@@ -129,8 +129,8 @@ func Generate(spec *openapi3.T, opts openapiv3.Configuration) (string, error) {
 		responseTypeSuffix = opts.OutputOptions.ResponseTypeSuffix
 	}
 
-	if globalState.options.OutputOptions.ClientTypeName == "" {
-		globalState.options.OutputOptions.ClientTypeName = defaultClientTypeName
+	if GlobalState.options.OutputOptions.ClientTypeName == "" {
+		GlobalState.options.OutputOptions.ClientTypeName = defaultClientTypeName
 	}
 
 	nameNormalizerFunction := NameNormalizerFunction(opts.OutputOptions.NameNormalizer)
@@ -141,7 +141,7 @@ func Generate(spec *openapi3.T, opts openapiv3.Configuration) (string, error) {
 	}
 
 	// This creates the golang templates text package
-	TemplateFunctions["opts"] = func() openapiv3.Configuration { return globalState.options }
+	TemplateFunctions["opts"] = func() openapiv3.Configuration { return GlobalState.options }
 	t := template.New("oapi-codegen").Funcs(TemplateFunctions)
 	// This parses all of our own template files into the template object
 	// above
@@ -288,7 +288,7 @@ func Generate(spec *openapi3.T, opts openapiv3.Configuration) (string, error) {
 
 	var inlinedSpec string
 	if opts.Generate.EmbeddedSpec {
-		inlinedSpec, err = GenerateInlinedSpec(t, globalState.importMapping, spec)
+		inlinedSpec, err = GenerateInlinedSpec(t, GlobalState.importMapping, spec)
 		if err != nil {
 			return "", fmt.Errorf("error generating Go handlers for Paths: %w", err)
 		}
@@ -297,7 +297,7 @@ func Generate(spec *openapi3.T, opts openapiv3.Configuration) (string, error) {
 	var buf bytes.Buffer
 	w := bufio.NewWriter(&buf)
 
-	externalImports := append(globalState.importMapping.GoImports(), importMap(xGoTypeImports).GoImports()...)
+	externalImports := append(GlobalState.importMapping.GoImports(), importMap(xGoTypeImports).GoImports()...)
 	importsOut, err := GenerateImports(
 		t,
 		externalImports,
@@ -752,7 +752,7 @@ func GenerateEnums(t *template.Template, types []TypeDefinition) (string, error)
 				Schema:         tp.Schema,
 				TypeName:       tp.TypeName,
 				ValueWrapper:   wrapper,
-				PrefixTypeName: globalState.options.Compatibility.AlwaysPrefixEnumValues,
+				PrefixTypeName: GlobalState.options.Compatibility.AlwaysPrefixEnumValues,
 			})
 		}
 	}
@@ -836,7 +836,7 @@ func GenerateImports(t *template.Template, externalImports []string, packageName
 		PackageName:       packageName,
 		ModuleName:        modulePath,
 		Version:           moduleVersion,
-		AdditionalImports: globalState.options.AdditionalImports,
+		AdditionalImports: GlobalState.options.AdditionalImports,
 	}
 
 	return GenerateTemplates([]string{"imports.tmpl"}, t, context)
@@ -1190,5 +1190,5 @@ func GetParametersImports(params map[string]*openapi3.ParameterRef) (map[string]
 }
 
 func SetGlobalStateSpec(spec *openapi3.T) {
-	globalState.spec = spec
+	GlobalState.spec = spec
 }
