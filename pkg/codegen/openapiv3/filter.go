@@ -1,6 +1,8 @@
-package codegen
+package openapiv3
 
-import "github.com/getkin/kin-openapi/openapi3"
+import (
+	"github.com/getkin/kin-openapi/openapi3"
+)
 
 func sliceToMap(items []string) map[string]bool {
 	m := make(map[string]bool, len(items))

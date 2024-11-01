@@ -33,6 +33,7 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 	"golang.org/x/tools/imports"
 
+	"github.com/oapi-codegen/oapi-codegen/v2/pkg/codegen/openapiv3"
 	"github.com/oapi-codegen/oapi-codegen/v2/pkg/util"
 )
 
@@ -44,7 +45,7 @@ var templates embed.FS
 // globalState stores all global state. Please don't put global state anywhere
 // else so that we can easily track it.
 var globalState struct {
-	options       Configuration
+	options       openapiv3.Configuration
 	spec          *openapi3.T
 	importMapping importMap
 }
@@ -111,16 +112,16 @@ func constructImportMapping(importMapping map[string]string) importMap {
 // Generate uses the Go templating engine to generate all of our server wrappers from
 // the descriptions we've built up above from the schema objects.
 // opts defines
-func Generate(spec *openapi3.T, opts Configuration) (string, error) {
+func Generate(spec *openapi3.T, opts openapiv3.Configuration) (string, error) {
 	// This is global state
 	globalState.options = opts
 	globalState.spec = spec
 	globalState.importMapping = constructImportMapping(opts.ImportMapping)
 
-	filterOperationsByTag(spec, opts)
-	filterOperationsByOperationID(spec, opts)
+	openapiv3.FilterOperationsByTag(spec, opts)
+	openapiv3.FilterOperationsByOperationID(spec, opts)
 	if !opts.OutputOptions.SkipPrune {
-		pruneUnusedComponents(spec)
+		openapiv3.PruneUnusedComponents(spec)
 	}
 
 	// if we are provided an override for the response type suffix update it
@@ -140,7 +141,7 @@ func Generate(spec *openapi3.T, opts Configuration) (string, error) {
 	}
 
 	// This creates the golang templates text package
-	TemplateFunctions["opts"] = func() Configuration { return globalState.options }
+	TemplateFunctions["opts"] = func() openapiv3.Configuration { return globalState.options }
 	t := template.New("oapi-codegen").Funcs(TemplateFunctions)
 	// This parses all of our own template files into the template object
 	// above
@@ -829,7 +830,7 @@ func GenerateImports(t *template.Template, externalImports []string, packageName
 		PackageName       string
 		ModuleName        string
 		Version           string
-		AdditionalImports []AdditionalImport
+		AdditionalImports []openapiv3.AdditionalImport
 	}{
 		ExternalImports:   externalImports,
 		PackageName:       packageName,

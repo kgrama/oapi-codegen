@@ -1,10 +1,4 @@
-package codegen
-
-import (
-	"errors"
-	"fmt"
-	"reflect"
-)
+package openapiv3
 
 type AdditionalImport struct {
 	Alias   string `yaml:"alias,omitempty"`
@@ -28,78 +22,6 @@ type Configuration struct {
 	// NoVCSVersionOverride allows overriding the version of the application for cases where no Version Control System (VCS) is available when building, for instance when using a Nix derivation.
 	// See documentation for how to use it in examples/no-vcs-version-override/README.md
 	NoVCSVersionOverride *string `yaml:"-"`
-}
-
-// Validate checks whether Configuration represent a valid configuration
-func (o Configuration) Validate() error {
-	if o.PackageName == "" {
-		return errors.New("package name must be specified")
-	}
-
-	// Only one server type should be specified at a time.
-	nServers := 0
-	if o.Generate.IrisServer {
-		nServers++
-	}
-	if o.Generate.ChiServer {
-		nServers++
-	}
-	if o.Generate.FiberServer {
-		nServers++
-	}
-	if o.Generate.EchoServer {
-		nServers++
-	}
-	if o.Generate.GorillaServer {
-		nServers++
-	}
-	if o.Generate.StdHTTPServer {
-		nServers++
-	}
-	if o.Generate.GinServer {
-		nServers++
-	}
-	if nServers > 1 {
-		return errors.New("only one server type is supported at a time")
-	}
-
-	var errs []error
-	if problems := o.Generate.Validate(); problems != nil {
-		for k, v := range problems {
-			errs = append(errs, fmt.Errorf("`generate` configuration for %v was incorrect: %v", k, v))
-		}
-	}
-
-	if problems := o.Compatibility.Validate(); problems != nil {
-		for k, v := range problems {
-			errs = append(errs, fmt.Errorf("`compatibility-options` configuration for %v was incorrect: %v", k, v))
-		}
-	}
-
-	if problems := o.OutputOptions.Validate(); problems != nil {
-		for k, v := range problems {
-			errs = append(errs, fmt.Errorf("`output-options` configuration for %v was incorrect: %v", k, v))
-		}
-	}
-
-	err := errors.Join(errs...)
-	if err != nil {
-		return fmt.Errorf("failed to validate configuration: %w", err)
-	}
-
-	return nil
-}
-
-// UpdateDefaults sets reasonable default values for unset fields in Configuration
-func (o Configuration) UpdateDefaults() Configuration {
-	if reflect.ValueOf(o.Generate).IsZero() {
-		o.Generate = GenerateOptions{
-			EchoServer:   true,
-			Models:       true,
-			EmbeddedSpec: true,
-		}
-	}
-	return o
 }
 
 // GenerateOptions specifies which supported output formats to generate.
@@ -126,10 +48,6 @@ type GenerateOptions struct {
 	Models bool `yaml:"models,omitempty"`
 	// EmbeddedSpec indicates whether to embed the swagger spec in the generated code
 	EmbeddedSpec bool `yaml:"embedded-spec,omitempty"`
-}
-
-func (oo GenerateOptions) Validate() map[string]string {
-	return nil
 }
 
 // CompatibilityOptions specifies backward compatibility settings for the
@@ -197,10 +115,6 @@ type CompatibilityOptions struct {
 	AllowUnexportedStructFieldNames bool `yaml:"allow-unexported-struct-field-names"`
 }
 
-func (co CompatibilityOptions) Validate() map[string]string {
-	return nil
-}
-
 // OutputOptions are used to modify the output code in some way.
 type OutputOptions struct {
 	// Whether to skip go imports on the generated code
@@ -239,16 +153,4 @@ type OutputOptions struct {
 
 	// Overlay defines configuration for the OpenAPI Overlay (https://github.com/OAI/Overlay-Specification) to manipulate the OpenAPI specification before generation. This allows modifying the specification without needing to apply changes directly to it, making it easier to keep it up-to-date.
 	Overlay OutputOptionsOverlay `yaml:"overlay"`
-}
-
-func (oo OutputOptions) Validate() map[string]string {
-	return nil
-}
-
-type OutputOptionsOverlay struct {
-	Path string `yaml:"path"`
-
-	// Strict defines whether the Overlay should be applied in a strict way, highlighting any actions that will not take any effect. This can, however, lead to more work when testing new actions in an Overlay, so can be turned off with this setting.
-	// Defaults to true.
-	Strict *bool `yaml:"strict,omitempty"`
 }
