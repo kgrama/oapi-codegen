@@ -17,6 +17,7 @@ import (
 	"testing"
 
 	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/oapi-codegen/oapi-codegen/v2/pkg/globalstate"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -232,8 +233,8 @@ components:
 }
 
 func TestRefPathToGoType(t *testing.T) {
-	old := GlobalState.ImportMapping
-	GlobalState.ImportMapping = constructImportMapping(
+	old := globalstate.GlobalState.ImportMapping
+	globalstate.GlobalState.ImportMapping = globalstate.ConstructImportMapping(
 		map[string]string{
 			"doc.json":                    "externalref0",
 			"http://deepmap.com/doc.json": "externalref1",
@@ -241,7 +242,7 @@ func TestRefPathToGoType(t *testing.T) {
 			"dj-current-package.yml": "-",
 		},
 	)
-	defer func() { GlobalState.ImportMapping = old }()
+	defer func() { globalstate.GlobalState.ImportMapping = old }()
 
 	tests := []struct {
 		name   string
