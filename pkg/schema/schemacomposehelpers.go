@@ -119,3 +119,28 @@ func translateInteger(f string, outSchema *Schema) {
 	}
 	outSchema.DefineViaAlias = true
 }
+
+func translateString(f string, outSchema *Schema) {
+	// Special case string formats here.
+	switch f {
+	case "byte":
+		outSchema.GoType = "[]byte"
+	case "email":
+		outSchema.GoType = "openapi_types.Email"
+	case "date":
+		outSchema.GoType = "openapi_types.Date"
+	case "date-time":
+		outSchema.GoType = "time.Time"
+	case "json":
+		outSchema.GoType = "json.RawMessage"
+		outSchema.SkipOptionalPointer = true
+	case "uuid":
+		outSchema.GoType = "openapi_types.UUID"
+	case "binary":
+		outSchema.GoType = "openapi_types.File"
+	default:
+		// All unrecognized formats are simply a regular string.
+		outSchema.GoType = "string"
+	}
+	outSchema.DefineViaAlias = true
+}

@@ -117,28 +117,7 @@ func oapiSchemaToGoType(schema *openapi3.Schema, path []string, outSchema *Schem
 		outSchema.GoType = "bool"
 		outSchema.DefineViaAlias = true
 	} else if t.Is("string") {
-		// Special case string formats here.
-		switch f {
-		case "byte":
-			outSchema.GoType = "[]byte"
-		case "email":
-			outSchema.GoType = "openapi_types.Email"
-		case "date":
-			outSchema.GoType = "openapi_types.Date"
-		case "date-time":
-			outSchema.GoType = "time.Time"
-		case "json":
-			outSchema.GoType = "json.RawMessage"
-			outSchema.SkipOptionalPointer = true
-		case "uuid":
-			outSchema.GoType = "openapi_types.UUID"
-		case "binary":
-			outSchema.GoType = "openapi_types.File"
-		default:
-			// All unrecognized formats are simply a regular string.
-			outSchema.GoType = "string"
-		}
-		outSchema.DefineViaAlias = true
+		translateString(f, outSchema)
 	} else {
 		return fmt.Errorf("unhandled Schema type: %v", t)
 	}
